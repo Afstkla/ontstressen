@@ -43,36 +43,6 @@
 
         /* Grain removed for true OLED black */
 
-        /* Warm ambient background washes */
-        .wash {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(120px);
-            pointer-events: none;
-            will-change: transform;
-        }
-        .wash-1 {
-            width: 50vmax; height: 50vmax;
-            background: radial-gradient(circle, rgba(139, 69, 19, 0.12) 0%, transparent 70%);
-            top: -15vmax; right: -10vmax;
-            animation: sway1 35s ease-in-out infinite;
-        }
-        .wash-2 {
-            width: 60vmax; height: 60vmax;
-            background: radial-gradient(circle, rgba(122, 139, 111, 0.08) 0%, transparent 70%);
-            bottom: -20vmax; left: -15vmax;
-            animation: sway2 40s ease-in-out infinite;
-        }
-        .wash-3 {
-            width: 35vmax; height: 35vmax;
-            background: radial-gradient(circle, rgba(196, 118, 42, 0.06) 0%, transparent 70%);
-            top: 40%; left: 55%;
-            animation: sway3 28s ease-in-out infinite;
-        }
-
-        @keyframes sway1 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-40px, 30px) scale(1.05); } }
-        @keyframes sway2 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(30px, -20px) scale(1.08); } }
-        @keyframes sway3 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-20px, -30px) scale(1.1); } }
 
         /* ── Tab navigation ── */
         .tabs {
@@ -253,21 +223,6 @@
         .sound-toggle:hover { border-color: rgba(196, 181, 160, 0.2); color: var(--text); }
         .sound-toggle.active { border-color: rgba(212, 160, 67, 0.3); color: var(--glow-core); }
 
-        /* ── Floating motes (shared) ── */
-        .motes {
-            position: fixed; inset: 0;
-            pointer-events: none; overflow: hidden;
-        }
-        .mote {
-            position: absolute; border-radius: 50%;
-            background: var(--glow-core); opacity: 0;
-        }
-        @keyframes drift-mote {
-            0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
-            15% { opacity: var(--mote-opacity, 0.15); }
-            85% { opacity: calc(var(--mote-opacity, 0.15) * 0.3); }
-            100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1); }
-        }
 
         @media (max-width: 480px) {
             .orb-wrap { width: 220px; height: 220px; }
@@ -279,10 +234,6 @@
 </head>
 <body>
 
-<div class="wash wash-1"></div>
-<div class="wash wash-2"></div>
-<div class="wash wash-3"></div>
-<div class="motes" id="motes"></div>
 
 <!-- Tab nav -->
 <nav class="tabs">
@@ -351,21 +302,6 @@ soundBtn.addEventListener('click', (e) => {
     }
 });
 
-// Floating motes
-const motesEl = document.getElementById('motes');
-for (let i = 0; i < 15; i++) {
-    const m = document.createElement('div');
-    m.className = 'mote';
-    const size = 1.5 + Math.random() * 2.5;
-    m.style.width = m.style.height = size + 'px';
-    m.style.left = Math.random() * 100 + '%';
-    m.style.top = Math.random() * 100 + '%';
-    m.style.setProperty('--dx', (Math.random() - 0.5) * 120 + 'px');
-    m.style.setProperty('--dy', (-30 - Math.random() * 100) + 'px');
-    m.style.setProperty('--mote-opacity', (0.06 + Math.random() * 0.12).toFixed(2));
-    m.style.animation = `drift-mote ${12 + Math.random() * 18}s ${Math.random() * 20}s linear infinite`;
-    motesEl.appendChild(m);
-}
 
 // ── Tab switching ──
 document.querySelectorAll('.tab-btn').forEach(btn => {
