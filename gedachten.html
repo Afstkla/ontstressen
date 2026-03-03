@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ontstressen — Gedachten</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0f0d0a;
+            --text: #c4b5a0;
+            --text-dim: #6b5e4f;
+            --text-bright: #e8dcc8;
+            --glow-core: #d4a043;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Grain */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            opacity: 0.035;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 128px 128px;
+            z-index: 9999;
+        }
+
+        /* Background washes */
+        .wash {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            pointer-events: none;
+        }
+        .wash-1 {
+            width: 50vmax; height: 50vmax;
+            background: radial-gradient(circle, rgba(139, 69, 19, 0.1) 0%, transparent 70%);
+            top: -15vmax; right: -10vmax;
+            animation: sway1 35s ease-in-out infinite;
+        }
+        .wash-2 {
+            width: 45vmax; height: 45vmax;
+            background: radial-gradient(circle, rgba(122, 139, 111, 0.07) 0%, transparent 70%);
+            bottom: -15vmax; left: -10vmax;
+            animation: sway2 40s ease-in-out infinite;
+        }
+
+        @keyframes sway1 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-40px, 30px); } }
+        @keyframes sway2 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(30px, -20px); } }
+
+        /* Navigation */
+        .back {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            transition: color 0.3s;
+            z-index: 10;
+        }
+        .back:hover { color: var(--text); }
+        .back svg { vertical-align: middle; margin-right: 4px; }
+
+        /* Main content */
+        .container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 560px;
+            padding: 24px;
+            gap: 48px;
+        }
+
+        .category-label {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.65rem;
+            font-weight: 400;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--glow-core);
+            opacity: 0.6;
+            transition: opacity 0.8s ease;
+        }
+
+        .question {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.6rem, 5vw, 2.4rem);
+            font-weight: 300;
+            font-style: italic;
+            line-height: 1.5;
+            text-align: center;
+            color: var(--text-bright);
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 1.2s ease, transform 1.2s ease;
+        }
+        .question.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .sub {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            font-weight: 300;
+            color: var(--text-dim);
+            text-align: center;
+            line-height: 1.6;
+            max-width: 380px;
+            opacity: 0;
+            transition: opacity 1s ease 0.4s;
+        }
+        .sub.visible { opacity: 1; }
+
+        .next-btn {
+            background: transparent;
+            border: 1px solid rgba(196, 181, 160, 0.12);
+            color: var(--text-dim);
+            padding: 10px 32px;
+            border-radius: 999px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            transition: all 0.4s ease;
+        }
+        .next-btn:hover {
+            border-color: rgba(212, 160, 67, 0.3);
+            color: var(--glow-core);
+        }
+
+        /* Divider line */
+        .divider {
+            width: 40px;
+            height: 1px;
+            background: rgba(196, 181, 160, 0.12);
+        }
+
+        /* Quote at bottom */
+        .wisdom {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.85rem;
+            font-weight: 300;
+            font-style: italic;
+            color: var(--text-dim);
+            opacity: 0.4;
+            text-align: center;
+            max-width: 400px;
+            padding: 0 24px;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wash wash-1"></div>
+<div class="wash wash-2"></div>
+
+<a href="/" class="back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    terug
+</a>
+
+<div class="container">
+    <div class="category-label" id="category"></div>
+    <div class="question" id="question"></div>
+    <div class="sub" id="sub"></div>
+    <div class="divider"></div>
+    <button class="next-btn" id="nextBtn">volgende gedachte</button>
+</div>
+
+<div class="wisdom" id="wisdom"></div>
+
+<script>
+const prompts = [
+    // Dankbaarheid
+    {
+        cat: 'dankbaarheid',
+        q: 'Waar ben je vandaag dankbaar voor dat je gisteren niet had opgemerkt?',
+        sub: 'Neem een moment om iets kleins te waarderen.',
+    },
+    {
+        cat: 'dankbaarheid',
+        q: 'Welk persoon heeft vandaag je dag een stukje beter gemaakt?',
+        sub: 'Soms is een glimlach al genoeg.',
+    },
+    {
+        cat: 'dankbaarheid',
+        q: 'Welk simpel comfort geniet je nu dat je vroeger niet had?',
+        sub: 'Warm water, een eigen bed, een kop thee...',
+    },
+    {
+        cat: 'dankbaarheid',
+        q: 'Wanneer heeft iemand je laatst verrast met iets liefs?',
+        sub: 'Laat die herinnering even tot je doordringen.',
+    },
+
+    // Zelfcompassie
+    {
+        cat: 'zelfcompassie',
+        q: 'Als je beste vriend(in) zich nu net zo voelde als jij, wat zou je tegen ze zeggen?',
+        sub: 'Probeer die woorden nu tegen jezelf te zeggen.',
+    },
+    {
+        cat: 'zelfcompassie',
+        q: 'Wat heb je onlangs goed gedaan waar je niet genoeg bij hebt stilgestaan?',
+        sub: 'Je mag trots zijn op de kleine dingen.',
+    },
+    {
+        cat: 'zelfcompassie',
+        q: 'Welke verwachting die je aan jezelf stelt mag je vandaag loslaten?',
+        sub: 'Niet alles hoeft perfect. Goed is ook goed.',
+    },
+    {
+        cat: 'zelfcompassie',
+        q: 'Wat is iets waar je jezelf steeds de schuld van geeft, maar eigenlijk niet je schuld is?',
+        sub: 'Soms is het oké om het los te laten.',
+    },
+
+    // Hier en nu
+    {
+        cat: 'hier en nu',
+        q: 'Noem vijf dingen die je nu kunt zien, vier die je kunt voelen, drie die je kunt horen.',
+        sub: 'Dit moment is genoeg.',
+    },
+    {
+        cat: 'hier en nu',
+        q: 'Hoe voelen je schouders zich nu? Kun je ze een centimeter laten zakken?',
+        sub: 'Spanning zit vaak waar je het niet verwacht.',
+    },
+    {
+        cat: 'hier en nu',
+        q: 'Wat is het eerste dat je ruikt als je er bewust op let?',
+        sub: 'Je zintuigen brengen je terug naar het nu.',
+    },
+    {
+        cat: 'hier en nu',
+        q: 'Welk geluid hoor je op de achtergrond dat je eerder niet opviel?',
+        sub: 'Luister... er is altijd iets.',
+    },
+
+    // Perspectief
+    {
+        cat: 'perspectief',
+        q: 'Over een jaar — zal dit moment er dan nog toe doen?',
+        sub: 'Niet alles wat zwaar voelt, is ook zwaar.',
+    },
+    {
+        cat: 'perspectief',
+        q: 'Wat zou je tienerversie zeggen als ze je nu kon zien?',
+        sub: 'Soms vergeten we hoe ver we al zijn gekomen.',
+    },
+    {
+        cat: 'perspectief',
+        q: 'Welk probleem van vorig jaar is nu helemaal geen probleem meer?',
+        sub: 'Dit gaat ook voorbij.',
+    },
+    {
+        cat: 'perspectief',
+        q: 'Wat is het verschil tussen wat je voelt en wat er werkelijk aan de hand is?',
+        sub: 'Gevoelens zijn echt, maar niet altijd feiten.',
+    },
+
+    // Verbinding
+    {
+        cat: 'verbinding',
+        q: 'Wie zou blij worden van een berichtje van jou, juist vandaag?',
+        sub: 'Verbinding is het beste medicijn.',
+    },
+    {
+        cat: 'verbinding',
+        q: 'Wat is de mooiste herinnering die je hebt met iemand van wie je houdt?',
+        sub: 'Sluit je ogen en leef het opnieuw.',
+    },
+    {
+        cat: 'verbinding',
+        q: 'Als je nu iemand zou kunnen knuffelen, wie zou dat zijn?',
+        sub: 'Dat verlangen zegt iets moois over je.',
+    },
+
+    // Loslaten
+    {
+        cat: 'loslaten',
+        q: 'Welke gedachte draag je al de hele dag mee die je nu mag neerleggen?',
+        sub: 'Je hoeft niet alles vast te houden.',
+    },
+    {
+        cat: 'loslaten',
+        q: 'Wat is iets dat je niet kunt veranderen, maar wel steeds probeert te controleren?',
+        sub: 'Acceptatie is geen zwakte — het is vrijheid.',
+    },
+    {
+        cat: 'loslaten',
+        q: 'Stel je voor dat je stress een ballon is. Kun je hem loslaten en zien hoe hij wegdrijft?',
+        sub: 'Adem in. Adem uit. Laat los.',
+    },
+
+    // Toekomst
+    {
+        cat: 'toekomst',
+        q: 'Waar kijk je naar uit, hoe klein ook?',
+        sub: 'Er is altijd iets om naar uit te kijken.',
+    },
+    {
+        cat: 'toekomst',
+        q: 'Als stress geen rol zou spelen, wat zou je morgen als eerste doen?',
+        sub: 'Misschien kun je dat toch doen.',
+    },
+    {
+        cat: 'toekomst',
+        q: 'Welk klein moment van plezier kun je jezelf morgen gunnen?',
+        sub: 'Plan iets liefs voor jezelf.',
+    },
+];
+
+const wisdoms = [
+    'Je hoeft niet alles op te lossen. Soms is er zijn genoeg.',
+    'Rust is geen beloning. Het is een noodzaak.',
+    'De golven stoppen niet, maar je kunt leren surfen.',
+    'Adem. Je bent hier. Dat is genoeg.',
+    'Niet elke dag hoeft productief te zijn. Sommige dagen zijn er om te herstellen.',
+    'Lief zijn voor jezelf is geen luxe, maar de basis.',
+    'Het is oké om niet oké te zijn.',
+    'Je verdient dezelfde vriendelijkheid die je aan anderen geeft.',
+];
+
+let usedIndices = [];
+const questionEl = document.getElementById('question');
+const subEl = document.getElementById('sub');
+const categoryEl = document.getElementById('category');
+const wisdomEl = document.getElementById('wisdom');
+const nextBtn = document.getElementById('nextBtn');
+
+function showPrompt() {
+    // Pick random unused prompt
+    if (usedIndices.length >= prompts.length) usedIndices = [];
+    let idx;
+    do { idx = Math.floor(Math.random() * prompts.length); } while (usedIndices.includes(idx));
+    usedIndices.push(idx);
+
+    const p = prompts[idx];
+
+    // Fade out
+    questionEl.classList.remove('visible');
+    subEl.classList.remove('visible');
+    categoryEl.style.opacity = '0';
+
+    setTimeout(() => {
+        categoryEl.textContent = p.cat;
+        questionEl.textContent = p.q;
+        subEl.textContent = p.sub;
+
+        categoryEl.style.opacity = '';
+        questionEl.classList.add('visible');
+        subEl.classList.add('visible');
+    }, 500);
+
+    // Random wisdom
+    wisdomEl.textContent = wisdoms[Math.floor(Math.random() * wisdoms.length)];
+}
+
+nextBtn.addEventListener('click', showPrompt);
+
+// Keyboard support
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'ArrowRight' || e.code === 'Enter') {
+        e.preventDefault();
+        showPrompt();
+    }
+});
+
+// Swipe support
+let touchStartX = 0;
+document.addEventListener('touchstart', (e) => {
+    if (e.target.closest('.next-btn') || e.target.closest('.back')) return;
+    touchStartX = e.touches[0].clientX;
+});
+document.addEventListener('touchend', (e) => {
+    if (e.target.closest('.next-btn') || e.target.closest('.back')) return;
+    const diff = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(diff) > 60) showPrompt();
+});
+
+// Show first prompt
+showPrompt();
+</script>
+
+</body>
+</html>
