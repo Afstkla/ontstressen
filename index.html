@@ -316,11 +316,10 @@ let countdownIntervalId = null;
 let sessionIntervalId = null;
 let sessionStart = null;
 
-// Orb animation state
-let orbScale = 0;       // 0 = small, 1 = large
-let orbScaleTarget = 0;
+// Orb animation state — time-based, tied to phase duration
+let orbScale = 0;          // 0 = small, 1 = large
 let orbGlow = 0.3;
-let orbGlowTarget = 0.3;
+let orbAnim = null;        // { from, to, glowFrom, glowTo, startTime, duration }
 
 // Audio
 let audioCtx = null;
@@ -374,9 +373,16 @@ function drawOrb() {
 
     ctx.clearRect(0, 0, w, h);
 
-    // Smooth interpolation
-    orbScale += (orbScaleTarget - orbScale) * 0.04;
-    orbGlow += (orbGlowTarget - orbGlow) * 0.06;
+    // Time-based interpolation tied to breathing phase duration
+    if (orbAnim) {
+        const elapsed = (performance.now() - orbAnim.startTime) / 1000;
+        const t = Math.min(elapsed / orbAnim.duration, 1);
+        // Smooth ease-in-out (sine curve — feels like natural breathing)
+        const eased = 0.5 - 0.5 * Math.cos(Math.PI * t);
+        orbScale = orbAnim.from + (orbAnim.to - orbAnim.from) * eased;
+        orbGlow = orbAnim.glowFrom + (orbAnim.glowTo - orbAnim.glowFrom) * eased;
+        if (t >= 1) orbAnim = null; // done, hold position
+    }
 
     const minR = w * 0.15;
     const maxR = w * 0.38;
@@ -464,8 +470,9 @@ function stopBreathing() {
     countdownIntervalId = null;
     sessionIntervalId = null;
 
-    orbScaleTarget = 0;
-    orbGlowTarget = 0.3;
+    orbAnim = null;
+    orbScale = 0;
+    orbGlow = 0.3;
     counterEl.classList.remove('visible');
     counterEl.textContent = '';
     instructionEl.textContent = 'tik om te beginnen';
@@ -491,15 +498,14 @@ function runPhase() {
         return;
     }
 
-    // Set orb targets based on phase
+    // Animate orb over the exact phase duration
     if (phase.key === 'inhale') {
-        orbScaleTarget = 1;
-        orbGlowTarget = 1;
+        orbAnim = { from: orbScale, to: 1, glowFrom: orbGlow, glowTo: 1, startTime: performance.now(), duration: duration };
     } else if (phase.key === 'exhale') {
-        orbScaleTarget = 0;
-        orbGlowTarget = 0.3;
+        orbAnim = { from: orbScale, to: 0, glowFrom: orbGlow, glowTo: 0.3, startTime: performance.now(), duration: duration };
+    } else {
+        orbAnim = null; // hold phases: freeze at current position
     }
-    // holdIn / holdOut: targets stay where they are
 
     instructionEl.textContent = phase.label;
 
